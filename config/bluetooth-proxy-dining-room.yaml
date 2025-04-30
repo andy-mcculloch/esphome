@@ -1,0 +1,41 @@
+esphome:
+  name: bluetooth-proxy-dining-room
+  friendly_name: Bluetooth Proxy Dining Room
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret bluetooth-proxy-dining-room-api-key
+
+ota:
+  - platform: esphome
+    password: !secret bluetooth-proxy-dining-room-ota-password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Bluetooth-Proxy-Dining-Room"
+    password: !secret bluetooth-proxy-dining-room-ap-password
+
+captive_portal:
+
+esp32_ble_tracker:
+  scan_parameters:
+    # We currently use the defaults to ensure Bluetooth
+    # can co-exist with WiFi In the future we may be able to
+    # enable the built-in coexistence logic in ESP-IDF
+    active: true
+
+bluetooth_proxy:
+  active: true    

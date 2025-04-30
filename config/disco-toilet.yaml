@@ -1,0 +1,88 @@
+esphome:
+  name: disco-toilet
+  friendly_name: Disco Toilet
+
+esp8266:
+  board: d1_mini
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret disco-toilet-api-key
+
+ota:
+  - platform: esphome
+    password: !secret disco-toilet-ota-password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Disco-Toilet Fallback Hotspot"
+    password: !secret disco-toilet-ap-password
+
+captive_portal:
+
+# Example configuration entry
+light:
+  - platform: rgb
+    id: disco_button_light
+    name: "Disco Button Light"
+    red: output_component1
+    green: output_component2
+    blue: output_component3
+    effects:
+      - random:
+          name: Slow Random Pulse
+      - random:
+          name: Fast Random Disco
+          transition_length: 0.5s
+          update_interval: 0.5s
+        
+# Example output entry
+output:
+  - platform: esp8266_pwm
+    id: output_component1
+    pin: D1
+  - platform: esp8266_pwm
+    id: output_component2
+    pin: D2
+  - platform: esp8266_pwm
+    id: output_component3
+    pin: D3
+  # Repeat for green and blue output
+
+binary_sensor:
+  - platform: gpio
+    id: physical_party_button
+    name: Party Button
+    pin:
+      number: D4
+      mode:
+        input: true
+      inverted: true
+    filters:
+      - delayed_on: 10ms
+    # on_press:
+    #   switch.turn_on:
+    #     id: party_button
+
+# switch:
+#   - platform: template
+#     id: party_button
+#     name: "Start the party!"
+#     icon: "mdi:party-popper"
+#     turn_on_action:
+#       - light.turn_on:
+#           id: disco_button_light
+#           effect: Fast Random Disco
+#     turn_off_action:
+#       light.turn_on:
+#         id: disco_button_light
+#         effect: Slow Random Pulse
+

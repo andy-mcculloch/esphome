@@ -1,0 +1,50 @@
+esphome:
+  name: smoke-machine
+  friendly_name: Smoke Machine
+
+esp8266:
+  board: d1_mini
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret smoke-machine-api-key
+
+ota:
+  - platform: esphome
+    password: !secret smoke-machine-ota-password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Smoke-Machine Fallback Hotspot"
+    password: !secret smoke-machine-ap-password
+
+captive_portal:
+
+binary_sensor:
+  - platform: gpio
+    pin: 
+      number: D2
+      inverted: yes
+      mode: INPUT_PULLUP
+    name: "Fog Machine Ready"
+    device_class: heat
+
+switch:
+  - platform: gpio
+    name: "Fog Machine"
+    pin: 
+      number: D1
+      inverted: true
+      mode: 
+        output: True
+        open_drain: True
+    restore_mode: ALWAYS_OFF
+

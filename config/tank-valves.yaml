@@ -1,0 +1,301 @@
+esphome:
+  name: irrigation-controller
+  friendly_name: irrigation_controller
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret tank-valves-api-key
+
+ota:
+  - platform: esphome
+    password: !secret tank-valves-ota-password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Irrigation-Controller"
+    password: !secret tank-valves-ap-password
+
+captive_portal:
+
+i2c:
+  sda: 4
+  scl: 5
+  scan: true
+  id: bus_a
+
+pcf8574:
+  - id: 'pcf8574_output_hub'  # for output channel 1-8
+    address: 0x24
+
+  - id: 'pcf8574_input_hub'  # for input channel 1-8
+    address: 0x22    
+
+switch:
+# Zone 1 Valve  
+  - platform: gpio
+    id: zone_1
+    name: "Veg Beds Irrigation"
+    icon: mdi:sprinkler-variant
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 4
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+# Zone 2 Valve  
+  - platform: gpio
+    id: zone_2
+    name: "Left Raised Beds Irrigation"
+    icon: mdi:sprinkler-variant
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 5
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+# Zone 3 Valve  
+  - platform: gpio
+    id: zone_3
+    name: "Right Raised Beds Irrigation"
+    icon: mdi:sprinkler-variant
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 6
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+# Zone 4 Valve  
+  - platform: gpio
+    id: zone_4
+    name: "Greenhouse Irrigation"
+    icon: mdi:sprinkler-variant
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 7
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+# Tank 1 Valve  
+  - platform: gpio
+    id: tank_1_a
+    icon: mdi:valve-open
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 2
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+
+  - platform: gpio
+    id: tank_1_b
+    icon: mdi:valve-closed
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 3
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+
+  - platform: template
+    name: "Tank 1 Valve"
+    icon: mdi:valve
+    turn_on_action:
+      - switch.turn_on: tank_1_a
+      - switch.turn_on: tank_1_b
+    turn_off_action:
+      - switch.turn_off: tank_1_a
+      - switch.turn_off: tank_1_b
+    # restore_state: true
+    # optimistic: true
+    lambda: |-
+      if (id(t1_v_o).state) {
+        return true;
+      } else {
+        if (id(t1_v_c).state) {
+          return false;
+        } else {
+          return true;
+        }
+      }
+
+# Tank 2 Valve  
+  - platform: gpio
+    id: tank_2_a
+    icon: mdi:valve-open
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 1
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+    
+  - platform: template
+    name: "Tank 2 Valve"
+    icon: mdi:valve
+    turn_on_action:
+      - switch.turn_on: tank_2_a
+    turn_off_action:
+      - switch.turn_on: tank_2_a
+    # restore_state: true
+    # optimistic: true
+    lambda: |-
+      if (id(t2_v_c).state) {
+        return false;
+      } else {
+        return true;
+      }
+
+binary_sensor:
+  - platform: gpio
+    name: "Tank 1 Valve Open"
+    id: t1_v_o
+    pin:
+      pcf8574: pcf8574_input_hub
+      number: 7
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "Tank 1 Valve Closed"
+    id: t1_v_c
+    pin:
+      pcf8574: pcf8574_input_hub
+      number: 6
+      mode: INPUT
+      inverted: true
+
+  - platform: gpio
+    name: "Tank 2 Valve Open"
+    id: t2_v_o
+    pin:
+      pcf8574: pcf8574_input_hub
+      number: 5
+      mode: INPUT
+      inverted: true
+    on_press:
+      then:
+        - switch.turn_off: tank_2_a
+
+  - platform: gpio
+    name: "Tank 2 Valve Closed"
+    id: t2_v_c
+    pin:
+      pcf8574: pcf8574_input_hub
+      number: 4
+      mode: INPUT
+      inverted: true
+    on_press:
+      then:
+        - switch.turn_off: tank_2_a
+
+  # - platform: gpio
+  #   name: "pin 3"
+  #   pin:
+  #     pcf8574: pcf8574_input_hub
+  #     number: 3
+  #     mode: INPUT
+  #     inverted: true
+
+  # - platform: gpio
+  #   name: "pin 2"
+  #   pin:
+  #     pcf8574: pcf8574_input_hub
+  #     number: 2
+  #     mode: INPUT
+  #     inverted: true
+
+  # - platform: gpio
+  #   name: "pin 1"
+  #   pin:
+  #     pcf8574: pcf8574_input_hub
+  #     number: 1
+  #     mode: INPUT
+  #     inverted: true
+
+  # - platform: gpio
+  #   name: "pin 0"
+  #   pin:
+  #     pcf8574: pcf8574_input_hub
+  #     number: 0
+  #     mode: INPUT
+  #     inverted: true
+
+sensor:
+# Reed switch on water meter
+  - platform: pulse_counter
+    pin:
+      number: 32
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: "Current Rainwater Consumption"
+    unit_of_measurement: "L/min"
+    icon: "mdi:water-pump"
+    device_class: "water"
+    state_class: "total_increasing"
+    accuracy_decimals: 0
+    filters:
+      - multiply: 1  # (1 pulse per litre)
+      - debounce: 0.1s
+    total:
+      unit_of_measurement: 'L'
+      name: 'Total Rainwater Consumption'
+      icon: "mdi:water-pump"
+      accuracy_decimals: 0
+      filters:
+      - multiply: 1  # (1 pulse per litre)
+      - debounce: 0.1s
+
+# Reed switch on rain guage
+  - platform: pulse_counter
+    pin:
+      number: 33
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: "Current Rainfall"
+    unit_of_measurement: "mm/min"
+    icon: "mdi:weather-rainy"
+    device_class: "precipitation"
+    state_class: "total_increasing"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.3  # (0.3mm per pulse)
+      - debounce: 0.1s
+    total:
+      unit_of_measurement: 'mm'
+      icon: "mdi:weather-rainy"
+      name: 'Rainfall Today'
+      accuracy_decimals: 1
+      filters:
+      - multiply: 0.3  # (0.3mm per pulse)
+      - debounce: 0.1s

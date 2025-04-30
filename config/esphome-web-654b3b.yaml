@@ -1,0 +1,50 @@
+esphome:
+  name: esphome-web-654b3b
+  friendly_name: Hot Water Tank
+
+esp8266:
+  board: d1_mini
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret esphome-web-654b3b-api-key
+
+ota:
+  - platform: esphome
+    password: !secret esphome-web-654b3b-ota-password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Hot-Water Fallback Hotspot"
+    password: !secret esphome-web-654b3b-ap-password
+
+captive_portal:
+
+one_wire:
+  - platform: gpio
+    pin: GPIO2
+
+sensor:
+  - platform: dallas_temp
+    address: 0xFF0215C23A86FF28
+    name: "Water Tank Top"
+  - platform: dallas_temp
+    address: 0xD0041650AEEEFF28
+    name: "Boiler Flow"
+  - platform: dallas_temp
+    address: 0x020115A74C5DFF28
+    name: "Water Tank Bottom"
+  - platform: dallas_temp
+    address: 0x6F0115A746D7FF28
+    name: "Water Tank Middle"
+  - platform: dallas_temp
+    address: 0x2F041650ADD7FF28
+    name: "Boiler Return"

@@ -1,0 +1,38 @@
+version: '3.7'
+services:
+  esphome:
+    container_name: esphome
+    image: ghcr.io/esphome/esphome:stable
+    volumes:
+      - /opt/esphome/config:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: always
+    privileged: true
+    restart: unless-stopped
+    ports:
+      - 6052:6052
+    networks:
+      web:
+        ipv4_address: 172.18.0.6
+      macvlan-system:
+    dns:
+      - 172.18.0.9
+      - 192.168.1.9
+    dns_search: ${DOMAIN}
+    environment:
+      - TZ="UTC"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web"
+      - "traefik.http.routers.esphome.rule=Host(`esphome.${DOMAIN}`)"
+      - "traefik.http.services.esphome.loadbalancer.server.port=6052"
+      - "traefik.http.routers.esphome.entrypoints=websecure"
+      - "traefik.http.routers.esphome.tls.certresolver=le_dns"
+
+networks:
+  macvlan-system:
+    external: true
+  web:
+    external: true
+
+

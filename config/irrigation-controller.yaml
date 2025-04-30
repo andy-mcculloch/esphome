@@ -1,0 +1,240 @@
+esphome:
+  name: irrigation-controller
+  friendly_name: irrigation_controller
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret irrigation-controller-api-key
+
+ota:
+  - platform: esphome
+    password: !secret irrigation-controller-ota-password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Irrigation-Controller"
+    password: !secret irrigation-controller-ap-password
+
+captive_portal:
+
+i2c:
+  sda: 4
+  scl: 5
+  scan: true
+  id: bus_a
+
+pcf8574:
+  - id: 'pcf8574_output_hub'  # for output channel 1-8
+    address: 0x24
+
+  - id: 'pcf8574_input_hub'  # for input channel 1-8
+    address: 0x22    
+
+switch:
+# Zone 1 Valve  
+  - platform: gpio
+    id: zone_1
+    name: "Gabion Veg Beds"
+    icon: mdi:sprinkler-variant
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 0
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+# Zone 2 Valve  
+  - platform: gpio
+    id: zone_2
+    name: "Uncovered Raised Beds"
+    icon: mdi:sprinkler-variant
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 1
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+# Zone 3 Valve  
+  - platform: gpio
+    id: zone_3
+    name: "Pots and Growbags"
+    icon: mdi:sprinkler-variant
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 2
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+# Zone 4 Valve  
+  - platform: gpio
+    id: zone_4
+    name: "Greenhouse and Polytunnels"
+    icon: mdi:sprinkler-variant
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 3
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+# Zone 5 Valve  
+  - platform: gpio
+    id: zone_5
+    name: "Fence Raised Bed"
+    icon: mdi:sprinkler-variant
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 4
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+# Zone 6 Valve  
+  - platform: gpio
+    id: zone_6
+    name: "Brick Raised Bed"
+    icon: mdi:sprinkler-variant
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 5
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+# Zone 7 Valve  
+  - platform: gpio
+    id: zone_7
+    name: "Zone 7 - Unused"
+    icon: mdi:sprinkler-variant
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 6
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+# Zone 8 Valve  
+  - platform: gpio
+    id: zone_8
+    name: "Zone 8 - Unused"
+    icon: mdi:sprinkler-variant
+    pin:
+      pcf8574: pcf8574_output_hub
+      number: 7
+      # One of INPUT or OUTPUT
+      mode:
+        output: true
+      inverted: true
+    internal: false
+
+binary_sensor:
+  # - platform: gpio
+  #   name: "pin 3"
+  #   pin:
+  #     pcf8574: pcf8574_input_hub
+  #     number: 3
+  #     mode: INPUT
+  #     inverted: true
+
+  # - platform: gpio
+  #   name: "pin 2"
+  #   pin:
+  #     pcf8574: pcf8574_input_hub
+  #     number: 2
+  #     mode: INPUT
+  #     inverted: true
+
+  # - platform: gpio
+  #   name: "pin 1"
+  #   pin:
+  #     pcf8574: pcf8574_input_hub
+  #     number: 1
+  #     mode: INPUT
+  #     inverted: true
+
+  # - platform: gpio
+  #   name: "pin 0"
+  #   pin:
+  #     pcf8574: pcf8574_input_hub
+  #     number: 0
+  #     mode: INPUT
+  #     inverted: true
+
+sensor:
+# Reed switch on water meter
+  - platform: pulse_counter
+    pin:
+      number: 32
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    name: "Instataneous Rainwater Consumption"
+    unit_of_measurement: "L/min"
+    icon: "mdi:water-pump"
+    device_class: "water"
+    state_class: "total_increasing"
+    accuracy_decimals: 0
+    filters:
+      - multiply: 1  # (1 pulse per litre)
+      - debounce: 0.1s
+    total:
+      unit_of_measurement: 'L'
+      name: 'Rainwater Consumption'
+      icon: "mdi:water-pump"
+      accuracy_decimals: 0
+      filters:
+      - multiply: 1  # (1 pulse per litre)
+      - debounce: 0.1s
+
+# Reed switch on rain guage
+  - platform: pulse_counter
+    pin:
+      number: 33
+      inverted: true
+      mode:
+        input: true
+        pullup: true
+    count_mode:
+      rising_edge: INCREMENT
+      falling_edge: INCREMENT
+    name: "Instataneous Rainfall"
+    unit_of_measurement: "mm"
+    icon: "mdi:weather-rainy"
+    device_class: "precipitation"
+    state_class: "total_increasing"
+    accuracy_decimals: 1
+    filters:
+      - multiply: 0.3  # (0.3mm per pulse)
+      - debounce: 0.1s
+    total:
+      unit_of_measurement: 'mm'
+      icon: "mdi:weather-rainy"
+      name: 'Rainfall'
+      accuracy_decimals: 1
+      filters:
+      - multiply: 0.3  # (0.3mm per pulse)
+      - debounce: 0.1s
+    update_interval: 5s  
