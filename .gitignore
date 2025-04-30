@@ -1,3 +1,4 @@
 secrets.yaml
 trash
 .esphome
+.env
