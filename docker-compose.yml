@@ -1,4 +1,3 @@
-version: '3.7'
 services:
   esphome:
     container_name: esphome
@@ -13,11 +12,11 @@ services:
     #   - 6052:6052
     networks:
       proxy:
-        ipv4_address: 172.18.0.6
+        # ipv4_address: 172.18.0.6
       macvlan-system:
     dns:
       - ${DNS_IP1}
-      - ${DNS_IP2}
+      # - ${DNS_IP2}
     dns_search: ${DOMAIN}
     environment:
       - TZ="UTC"
