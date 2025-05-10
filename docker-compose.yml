@@ -5,7 +5,6 @@ services:
     volumes:
       - ${CONFIG_DIR}:/config
       - /etc/localtime:/etc/localtime:ro
-    restart: always
     privileged: true
     restart: unless-stopped
     # ports:
