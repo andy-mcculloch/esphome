@@ -4,20 +4,20 @@ services:
     container_name: esphome
     image: ghcr.io/esphome/esphome:stable
     volumes:
-      - /opt/esphome/config:/config
+      - ${CONFIG_DIR}:/config
       - /etc/localtime:/etc/localtime:ro
     restart: always
     privileged: true
     restart: unless-stopped
-    ports:
-      - 6052:6052
+    # ports:
+    #   - 6052:6052
     networks:
-      web:
+      proxy:
         ipv4_address: 172.18.0.6
       macvlan-system:
     dns:
-      - 172.18.0.9
-      - 192.168.1.9
+      - ${DNS_IP1}
+      - ${DNS_IP2}
     dns_search: ${DOMAIN}
     environment:
       - TZ="UTC"
@@ -32,7 +32,7 @@ services:
 networks:
   macvlan-system:
     external: true
-  web:
+  proxy:
     external: true
 
 
