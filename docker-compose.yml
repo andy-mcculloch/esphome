@@ -7,8 +7,8 @@ services:
       - /etc/localtime:/etc/localtime:ro
     privileged: true
     restart: unless-stopped
-    # ports:
-    #   - 6052:6052
+    ports:
+      - 6052:6052
     networks:
       proxy:
         # ipv4_address: 172.18.0.6
@@ -21,7 +21,7 @@ services:
       - TZ="UTC"
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=web"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.esphome.rule=Host(`esphome.${DOMAIN}`)"
       - "traefik.http.services.esphome.loadbalancer.server.port=6052"
       - "traefik.http.routers.esphome.entrypoints=websecure"
